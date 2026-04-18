@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 import { 
   Facebook, 
   CheckCircle2, 
@@ -200,8 +201,4 @@ export function FacebookConnect() {
       )}
     </div>
   );
-}
-
-function cn(...classes: any[]) {
-  return classes.filter(Boolean).join(' ');
 }

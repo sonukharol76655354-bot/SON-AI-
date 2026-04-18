@@ -3,8 +3,21 @@ import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+const isConfigValid = firebaseConfig && firebaseConfig.apiKey && firebaseConfig.projectId;
+
+let app;
+try {
+  app = getApps().length > 0 ? getApp() : initializeApp(isConfigValid ? firebaseConfig : {
+    apiKey: "PLACEHOLDER",
+    authDomain: "PLACEHOLDER",
+    projectId: "PLACEHOLDER"
+  });
+} catch (e) {
+  console.error("Firebase initialization failed", e);
+  app = {} as any;
+}
+
+export const db = getFirestore(app, isConfigValid ? (firebaseConfig as any).firestoreDatabaseId : undefined);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 import { Clock, Timer, Calendar, Globe, Power, Play, Pause, CheckCircle2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { db } from '@/lib/firebase';
@@ -156,8 +157,4 @@ export function Scheduler() {
       </div>
     </div>
   );
-}
-
-function cn(...classes: any[]) {
-  return classes.filter(Boolean).join(' ');
 }

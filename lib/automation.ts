@@ -1,11 +1,28 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY! });
+let aiInstance: GoogleGenAI | null = null;
+
+function getAI() {
+  if (!aiInstance) {
+    try {
+      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error('NEXT_PUBLIC_GEMINI_API_KEY is not defined');
+      }
+      aiInstance = new GoogleGenAI({ apiKey });
+    } catch (e) {
+      console.error("AI Initialization Failed:", e);
+      throw e;
+    }
+  }
+  return aiInstance;
+}
 
 /**
  * Generates a title, caption, and optimized hashtags from an image or video description.
  */
 export async function autoCaptionMedia(fileData: string, mimeType: string, context: string = '') {
+  const ai = getAI();
   const prompt = `
     Analyze this ${mimeType.startsWith('image') ? 'image' : 'video'} and generate professional social media content.
     
@@ -51,6 +68,7 @@ export async function autoCaptionMedia(fileData: string, mimeType: string, conte
  * Standardizes for USA / North American audience and timezone.
  */
 export async function generateContentFromMaster(masterConfig: any) {
+  const ai = getAI();
   const prompt = `
     BRAND: ${masterConfig.brandName}
     MASTER INPUT: ${masterConfig.masterPrompt}

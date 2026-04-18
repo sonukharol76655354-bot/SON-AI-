@@ -1,6 +1,22 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY as string });
+let aiInstance: GoogleGenAI | null = null;
+
+function getAI() {
+  if (!aiInstance) {
+    try {
+      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error('NEXT_PUBLIC_GEMINI_API_KEY is not defined');
+      }
+      aiInstance = new GoogleGenAI({ apiKey });
+    } catch (e) {
+      console.error("AI Initialization Failed:", e);
+      throw e;
+    }
+  }
+  return aiInstance;
+}
 
 export const contentSchema = {
   type: Type.OBJECT,
@@ -16,6 +32,7 @@ export const contentSchema = {
 };
 
 export async function generateContent(masterPrompt: any) {
+  const ai = getAI();
   const prompt = `
     Based on the following Master Prompt configuration, generate a high-quality Facebook post package.
     
