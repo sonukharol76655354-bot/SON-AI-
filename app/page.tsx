@@ -19,6 +19,19 @@ import { AutomationEngine } from '@/components/AutomationEngine';
 export default function Page() {
   const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [authLoading, setAuthLoading] = useState(false);
+
+  const handleLogin = async () => {
+    setAuthLoading(true);
+    try {
+      await signIn();
+    } catch (error) {
+      console.error('Login Error:', error);
+      alert('Login failed. Please check if your popup is blocked or the domain is authorized in Firebase.');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -55,11 +68,16 @@ export default function Page() {
 
           <div className="space-y-4">
             <button 
-              onClick={signIn}
+              onClick={handleLogin}
+              disabled={authLoading}
               className="btn-primary w-full h-16 flex items-center justify-center gap-4 text-sm tracking-widest uppercase shadow-indigo-500/40"
             >
-              <Image src="https://www.google.com/favicon.ico" width={20} height={20} className="w-5 h-5 grayscale-0 rounded-full" alt="Google" referrerPolicy="no-referrer" />
-              <span>Connect Administration</span>
+              {authLoading ? (
+                <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Image src="https://www.google.com/favicon.ico" width={20} height={20} className="w-5 h-5 grayscale-0 rounded-full" alt="Google" referrerPolicy="no-referrer" />
+              )}
+              <span>{authLoading ? 'Authorizing...' : 'Connect Administration'}</span>
             </button>
             <p className="text-[10px] text-ink-muted/40 font-bold uppercase tracking-widest pt-4">Secured by Cloud Node 01</p>
           </div>

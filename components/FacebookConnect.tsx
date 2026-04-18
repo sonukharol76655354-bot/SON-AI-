@@ -44,13 +44,14 @@ export function FacebookConnect() {
 
   const simulateLogin = async () => {
     setLoading(true);
-    setTimeout(async () => {
+    try {
       await setDoc(doc(db, 'facebookAccounts', 'primary'), {
         userId: 'fb_user_12345',
         name: 'SONAI Administrator',
         connectedAt: new Date().toISOString()
       });
 
+      // Clear existing pages before re-syncing
       const oldPages = await getDocs(collection(db, 'facebookPages'));
       for (const p of oldPages.docs) {
         await deleteDoc(doc(db, 'facebookPages', p.id));
@@ -65,9 +66,12 @@ export function FacebookConnect() {
       for (const mp of mockPages) {
         await addDoc(collection(db, 'facebookPages'), mp);
       }
-
+    } catch (error) {
+      console.error('Facebook Synchronization Failed:', error);
+      alert('Sync failed. Please ensure you are logged in correctly and Firebase rules are deployed.');
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   const selectPage = async (pageId: string) => {
