@@ -1,0 +1,106 @@
+{
+  "entities": {
+    "appSettings": {
+      "title": "Application Settings",
+      "description": "Global application settings including automation status and timezone.",
+      "type": "object",
+      "properties": {
+        "isAutomationEnabled": { "type": "boolean" },
+        "timezone": { "type": "string" },
+        "selectedPageId": { "type": "string" },
+        "manualApproval": { "type": "boolean" },
+        "lastRunAt": { "type": "string", "format": "date-time" },
+        "nextRunAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "masterPrompt": {
+      "title": "Master Prompt",
+      "description": "Foundation for content generation.",
+      "type": "object",
+      "properties": {
+        "brandName": { "type": "string" },
+        "niche": { "type": "string" },
+        "audience": { "type": "string" },
+        "tone": { "type": "string" },
+        "contentGoal": { "type": "string" },
+        "language": { "type": "string" },
+        "imageStyle": { "type": "string" },
+        "videoStyle": { "type": "string" },
+        "ctaStyle": { "type": "string" },
+        "postStyle": { "type": "string" },
+        "variationLevel": { "type": "string" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["brandName", "niche", "isActive"]
+    },
+    "facebookAccount": {
+      "title": "Facebook Account",
+      "description": "Stored Facebook session and account info.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "sessionToken": { "type": "string" },
+        "connectedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "facebookPage": {
+      "title": "Facebook Page",
+      "description": "Pages accessible by the user.",
+      "type": "object",
+      "properties": {
+        "pageId": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "accessToken": { "type": "string" }
+      }
+    },
+    "generatedContent": {
+      "title": "Generated Content",
+      "description": "Content ready for publishing or as draft.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "caption": { "type": "string" },
+        "imagePrompt": { "type": "string" },
+        "videoPrompt": { "type": "string" },
+        "hashtags": { "type": "array", "items": { "type": "string" } },
+        "cta": { "type": "string" },
+        "status": { "type": "string", "enum": ["draft", "scheduled", "publishing", "posted", "failed"] },
+        "errorLog": { "type": "string" },
+        "scheduledAt": { "type": "string", "format": "date-time" },
+        "publishedAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "schedulerJob": {
+      "title": "Scheduler Job",
+      "description": "Configuration for the fixed 2-hour cycles.",
+      "type": "object",
+      "properties": {
+        "timeSlot": { "type": "string" },
+        "isEnabled": { "type": "boolean" }
+      }
+    },
+    "publishLog": {
+      "title": "Publish Log",
+      "description": "History of automation runs.",
+      "type": "object",
+      "properties": {
+        "runAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string" },
+        "message": { "type": "string" },
+        "contentId": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/settings/global": { "schema": "appSettings", "description": "Global settings" },
+    "/masterPrompts": { "schema": "masterPrompt", "description": "List of master prompts" },
+    "/facebookAccounts": { "schema": "facebookAccount", "description": "Connected Facebook accounts" },
+    "/facebookPages": { "schema": "facebookPage", "description": "Available FB pages" },
+    "/contents": { "schema": "generatedContent", "description": "Generated content items" },
+    "/schedule": { "schema": "schedulerJob", "description": "Automation schedule" },
+    "/logs": { "schema": "publishLog", "description": "Run history" }
+  }
+}

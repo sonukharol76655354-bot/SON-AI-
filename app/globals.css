@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  
+  --color-primary: #6366f1; /* Indigo */
+  --color-accent: #06b6d4;  /* Cyan */
+  --color-gold: #f59e0b;    /* Premium Gold */
+
+  /* Pro Slate Palette */
+  --color-slate-950: #020617;
+  --color-slate-900: #0f172a;
+  --color-slate-800: #1e293b;
+  --color-slate-100: #f1f5f9;
+  
+  /* Bridge variables */
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+}
+
+:root {
+  --bg: #0f172a; /* Deep Navy Slate */
+  --surface: #1e293b; /* Lighter Slate for cards */
+  --ink: #f8fafc;
+  --ink-muted: #94a3b8;
+  
+  --glass-bg: rgba(30, 41, 59, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  
+  --radius-pro: 16px;
+}
+
+@layer base {
+  body {
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
+    background-attachment: fixed;
+    overflow-x: hidden;
+  }
+
+  /* Subtle background depth */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.1) 0%, transparent 75%);
+    pointer-events: none;
+    z-index: -1;
+  }
+}
+
+@layer components {
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-ink-muted/80 hover:text-white hover:bg-white/5;
+  }
+
+  .sidebar-link.active {
+    @apply text-white bg-indigo-500/10 font-bold border border-indigo-500/20 shadow-sm text-indigo-400;
+  }
+
+  .admin-card {
+    @apply bg-slate-900/40 border border-white/5 rounded-2xl p-6 transition-all hover:bg-slate-900/60 hover:border-white/10;
+  }
+
+  .card-title {
+    @apply text-xs font-bold uppercase tracking-wider text-ink-muted/60 mb-6 flex justify-between items-center;
+  }
+
+  .btn-primary {
+    @apply bg-indigo-500 text-white hover:bg-indigo-600 font-bold px-6 py-3 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 shadow-lg shadow-indigo-500/20;
+  }
+
+  .btn-secondary {
+    @apply bg-white/5 hover:bg-white/10 text-white font-semibold px-4 py-3 rounded-xl transition-all border border-white/10;
+  }
+
+  .btn-ghost {
+    @apply text-ink-muted hover:text-white hover:bg-white/5 px-4 py-2 rounded-lg transition-all;
+  }
+
+  input, textarea, select {
+    @apply bg-slate-950/50 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 text-white placeholder:text-white/10 transition-all;
+  }
+
+  .status-pill {
+    @apply px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border;
+  }
+
+  .logo-text {
+    @apply font-black tracking-tighter text-white;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
