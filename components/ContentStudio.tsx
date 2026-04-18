@@ -42,40 +42,34 @@ export function ContentStudio() {
   const handleGenerate = async () => {
     setIsGenerating(true);
     try {
-      // 1. First look for settings/global or masterPrompts
-      const q = query(collection(db, 'settings'), where('brandName', '!=', ''));
-      const snapshot = await getDocs(q);
+      // Find the active Master Intelligence Node
+      const mq = query(collection(db, 'masterPrompts'), where('isActive', '==', true));
+      const mSnap = await getDocs(mq);
       
-      let masterConfig: any = { masterPrompt: 'A high quality tech post' };
-      if (!snapshot.empty) {
-        masterConfig = snapshot.docs[0].data();
+      if (mSnap.empty) {
+        throw new Error('No active Intelligence Node found. Please set a Master Prompt first.');
       }
 
-      // 2. Fallback to masterPrompts if settings is empty or not found
-      if (!snapshot.empty && !masterConfig.masterPrompt) {
-         const mq = query(collection(db, 'masterPrompts'), where('isActive', '==', true));
-         const mSnap = await getDocs(mq);
-         if (!mSnap.empty) {
-            masterConfig = mSnap.docs[0].data();
-         }
-      }
+      const masterConfig = mSnap.docs[0].data();
 
       const content = await generateContentFromMaster({
         ...masterConfig,
         mediaPreference: activeMediaTab,
-        timezone: 'America/New_York' // Ensure default for generation context
+        timezone: 'America/New_York'
       });
       
       await addDoc(collection(db, 'contents'), {
         ...content,
         mediaUrl: content.mediaUrl || `https://picsum.photos/seed/${Math.random()}/1080/1080`,
         mediaType: activeMediaTab,
+        targetPageId: masterConfig.linkedPageId || 'unlinked',
+        brandName: masterConfig.brandName,
         status: 'ready',
         createdAt: new Date().toISOString()
       });
     } catch (e) {
       console.error(e);
-      alert('Generation failed. Ensure Gemini API key is configured or Master Prompt is saved.');
+      alert('Generation failed. Ensure Gemini API key is configured or Master Prompt is saved correctly.');
     } finally {
       setIsGenerating(false);
     }
@@ -196,7 +190,7 @@ export function ContentStudio() {
                           item.status === 'posted' ? "bg-emerald-500" : "bg-indigo-500 animate-pulse"
                         )} />
                         <span className="text-[9px] font-black uppercase tracking-widest text-white/60">
-                          {item.mediaType} &bull; {item.status}
+                          {item.mediaType} &bull; {item.status} {item.brandName ? `| ${item.brandName}` : ''}
                         </span>
                       </div>
                       <button 

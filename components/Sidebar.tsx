@@ -81,26 +81,17 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         </div>
       </nav>
 
-      {user && (
-        <div className="p-6 border-t border-white/5 bg-white/[0.02]">
-          <div className="flex items-center gap-3 mb-6 px-2">
-            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold text-xs">
-              {user.displayName?.[0] || user.email?.[0]?.toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold truncate text-white">{user.displayName || 'SONAI Admin'}</p>
-              <p className="text-[10px] text-indigo-400/50 font-medium">Standard License</p>
-            </div>
+      <div className="p-6 border-t border-white/5 bg-white/[0.02]">
+        <div className="flex items-center gap-3 mb-2 px-2">
+          <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold text-xs">
+            A
           </div>
-          <button
-            onClick={() => auth.signOut()}
-            className="flex items-center gap-3 w-full py-3 px-4 rounded-xl bg-white/5 text-ink-muted hover:bg-red-500/10 hover:text-red-400 text-xs font-semibold transition-all border border-transparent hover:border-red-500/20"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>Sign Out</span>
-          </button>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold truncate text-white">SONAI Admin</p>
+            <p className="text-[10px] text-indigo-400/50 font-medium">Enterprise Node</p>
+          </div>
         </div>
-      )}
+      </div>
     </aside>
   );
 }

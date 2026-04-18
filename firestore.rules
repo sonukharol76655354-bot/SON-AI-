@@ -7,22 +7,13 @@ service cloud.firestore {
     }
 
     // --- Helper Functions ---
+    // (Auth removed for open-access system)
     function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isVerified() {
-      // In this environment, we might skip strict verification for dev speed if needed, 
-      // but let's stick to the rule if the user is the admin.
-      return isSignedIn();
+      return true; 
     }
 
     function isAdmin() {
-      return isVerified() && (
-        request.auth.token.email == 'sonukharol76655354@gmail.com' ||
-        // Adding a fallback for the specific UID if email is missing in token
-        request.auth.uid != null 
-      );
+      return true;
     }
 
     function isValidId(id) {

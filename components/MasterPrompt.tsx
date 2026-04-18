@@ -1,14 +1,15 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Save, Plus, Trash2, Eye, Sparkles, Terminal } from 'lucide-react';
+import { Save, Plus, Trash2, Eye, Sparkles, Terminal, Zap } from 'lucide-react';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, updateDoc, doc, deleteDoc, query, where } from 'firebase/firestore';
+import { collection, addDoc, getDocs, updateDoc, doc, deleteDoc, query, where, onSnapshot } from 'firebase/firestore';
 import { generateContentFromMaster } from '@/lib/automation';
 import { motion } from 'motion/react';
 
 export function MasterPrompt() {
   const [prompts, setPrompts] = useState<any[]>([]);
+  const [pages, setPages] = useState<any[]>([]);
   const [selectedPrompt, setSelectedPrompt] = useState<any>(null);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [previewContent, setPreviewContent] = useState<any>(null);
@@ -16,28 +17,25 @@ export function MasterPrompt() {
 
   const [formData, setFormData] = useState({
     brandName: 'SONAI',
-    masterPrompt: '', // Combined knowledge and directions
+    masterPrompt: '', 
+    linkedPageId: '', // Linking logic
     isActive: true
   });
 
-  const fetchPrompts = useCallback(async () => {
-    const q = collection(db, 'masterPrompts');
-    const snapshot = await getDocs(q);
-    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setPrompts(data);
-    return data;
-  }, []);
-
   useEffect(() => {
-    const init = async () => {
-      const data = await fetchPrompts();
-      if (data.length > 0 && !selectedPrompt) {
-        setSelectedPrompt(data[0]);
-        setFormData(data[0] as any);
-      }
+    const unsubPrompts = onSnapshot(collection(db, 'masterPrompts'), (snapshot) => {
+      setPrompts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+
+    const unsubPages = onSnapshot(collection(db, 'facebookPages'), (snapshot) => {
+      setPages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+
+    return () => {
+      unsubPrompts();
+      unsubPages();
     };
-    init();
-  }, [fetchPrompts, selectedPrompt]);
+  }, []);
 
   const handleSave = async () => {
     setLoading(true);
@@ -48,13 +46,27 @@ export function MasterPrompt() {
         const docRef = await addDoc(collection(db, 'masterPrompts'), formData);
         setSelectedPrompt({ id: docRef.id, ...formData });
       }
-      await fetchPrompts();
-      alert('Master Configuration Saved.');
+      alert('Node Intelligence Saved.');
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
     }
+  };
+
+  const createNew = () => {
+    setSelectedPrompt(null);
+    setFormData({
+      brandName: 'New Page Admin',
+      masterPrompt: '',
+      linkedPageId: '',
+      isActive: true
+    });
+  };
+
+  const selectNode = (prompt: any) => {
+    setSelectedPrompt(prompt);
+    setFormData(prompt);
   };
 
   const handlePreview = async () => {
@@ -85,17 +97,16 @@ export function MasterPrompt() {
     <div className="space-y-10 max-w-4xl mx-auto">
       <header className="flex justify-between items-end">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-white uppercase">SONAI Intelligence</h1>
-          <p className="text-ink-muted font-medium mt-1">Set one Master Prompt to anchor your entire automation engine.</p>
+          <h1 className="text-4xl font-black tracking-tight text-white uppercase">Neural Node Manager</h1>
+          <p className="text-ink-muted font-medium mt-1">Multi-Page Architecture: Connect separate prompts to separate target pages.</p>
         </div>
         <div className="flex gap-4">
           <button 
-            onClick={handlePreview}
-            disabled={loading}
+            onClick={createNew}
             className="btn-secondary flex items-center gap-2 group border-indigo-500/20 hover:border-indigo-500/50"
           >
-            <Sparkles className="w-4 h-4 group-hover:text-indigo-400" />
-            <span className="text-xs font-bold uppercase tracking-wider">Output Test</span>
+            <Plus className="w-4 h-4" />
+            <span className="text-xs font-bold uppercase tracking-wider">New Node</span>
           </button>
           <button 
             onClick={handleSave}
@@ -103,56 +114,116 @@ export function MasterPrompt() {
             className="btn-primary flex items-center gap-2"
           >
             <Save className="w-4 h-4" />
-            <span className="text-xs font-bold uppercase tracking-wider">{loading ? 'Saving...' : 'Save Configuration'}</span>
+            <span className="text-xs font-bold uppercase tracking-wider">{loading ? 'Saving...' : 'Deploy Intel'}</span>
           </button>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 gap-10">
-        <div className="space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
+        <aside className="lg:col-span-1 space-y-4">
+          <label className="text-[10px] font-bold uppercase tracking-widest text-ink-muted/40">Active Intelligence Nodes</label>
+          <div className="space-y-2">
+            {prompts.map(p => (
+              <button
+                key={p.id}
+                onClick={() => selectNode(p)}
+                className={`w-full text-left p-5 rounded-2xl border transition-all duration-300 ${
+                  selectedPrompt?.id === p.id 
+                    ? 'bg-white border-white text-black shadow-2xl shadow-white/10 scale-[1.02]' 
+                    : 'bg-white/[0.03] border-white/5 text-white/50 hover:border-white/20 hover:text-white'
+                }`}
+              >
+                <p className="text-[11px] font-black uppercase tracking-tight truncate">{p.brandName}</p>
+                <div className={cn(
+                  "flex items-center gap-1.5 mt-2",
+                  selectedPrompt?.id === p.id ? "text-black/60" : "text-indigo-400"
+                )}>
+                  <Zap className="w-3 h-3 fill-current" />
+                  <p className="text-[9px] font-bold uppercase tracking-widest truncate">
+                    {p.linkedPageId ? 'Synced' : 'No Link'}
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </aside>
+
+        <div className="lg:col-span-3 space-y-8">
           <div className="admin-card space-y-8 bg-slate-900/60 shadow-2xl">
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">Node Branding</label>
+                <input 
+                  value={formData.brandName}
+                  onChange={e => setFormData({...formData, brandName: e.target.value})}
+                  className="w-full bg-white/5 border-white/5 rounded-xl px-4 py-3 text-sm font-bold focus:border-indigo-500/40"
+                  placeholder="e.g. Health Daily"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">Target Page Link</label>
+                <select 
+                  value={formData.linkedPageId}
+                  onChange={e => setFormData({...formData, linkedPageId: e.target.value})}
+                  className="w-full bg-white/5 border-white/5 rounded-xl px-4 py-3 text-sm font-bold focus:border-indigo-500/40"
+                >
+                  <option value="">Select Target Page...</option>
+                  {pages.map(page => (
+                    <option key={page.pageId} value={page.pageId}>{page.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <label className="text-[11px] font-bold uppercase tracking-[0.2em] text-indigo-400">Master Prompt System</label>
+                <label className="text-[11px] font-bold uppercase tracking-[0.2em] text-indigo-400">Neural Master Prompt</label>
                 <div className="flex items-center gap-2">
                   <div className={`w-2 h-2 rounded-full ${formData.isActive ? 'bg-green-500 animate-pulse' : 'bg-white/10'}`} />
-                  <span className="text-[10px] font-bold uppercase text-ink-muted/60">{formData.isActive ? 'Active Engine' : 'Engine Idle'}</span>
+                  <span className="text-[10px] font-bold uppercase text-ink-muted/60">{formData.isActive ? 'Node Online' : 'Node Idle'}</span>
                 </div>
               </div>
               
               <textarea 
                 value={formData.masterPrompt}
                 onChange={e => setFormData({...formData, masterPrompt: e.target.value})}
-                placeholder="Enter your comprehensive brand guidelines, niche depth, audience insights, and style preferences here... This is the only input the system needs." 
-                className="w-full h-80 text-sm leading-relaxed scrollbar-hide"
+                placeholder="Enter guidelines for this specific page..."
+                className="w-full h-80 text-sm leading-relaxed scrollbar-hide bg-black/20 border-white/5 rounded-2xl p-6"
               />
-              
-              <div className="p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 flex gap-4">
-                <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0">
-                  <Terminal className="w-5 h-5 text-indigo-400" />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-300">Automated Context Sync</p>
-                  <p className="text-[10px] text-ink-muted/80 leading-relaxed">
-                    Once saved, SONAI will use this prompt to automatically determine all titles, captions, image styles, 
-                    and posting logic across the entire dashboard. No further manual filling is required.
-                  </p>
-                </div>
+            </div>
+            
+            <div className="p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 flex gap-4">
+              <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center shrink-0">
+                <Terminal className="w-5 h-5 text-indigo-400" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-300">Automated Context Sync</p>
+                <p className="text-[10px] text-ink-muted/80 leading-relaxed">
+                  Once saved, SONAI will use this prompt to automatically determine all titles, captions, image styles, 
+                  and posting logic across the entire dashboard. No further manual filling is required.
+                </p>
               </div>
             </div>
 
-            <div className="pt-4 flex items-center gap-6">
-              <button 
-                onClick={() => setFormData({...formData, isActive: !formData.isActive})}
-                className="flex items-center gap-3 group"
-              >
-                <div className={`w-12 h-6 rounded-full transition-all relative flex items-center px-1 ${formData.isActive ? 'bg-indigo-500' : 'bg-slate-800 border border-white/5'}`}>
-                  <div className={`w-4 h-4 rounded-full bg-white shadow-md transition-all ${formData.isActive ? 'ml-6' : 'ml-0'}`} />
+            <div className="pt-4 border-t border-white/5 space-y-4">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className={`w-2 h-2 rounded-full transition-all duration-500 ${formData.isActive ? 'bg-white shadow-[0_0_12px_rgba(255,255,255,0.8)]' : 'bg-white/10'}`} />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-white/80">
+                    {formData.isActive ? 'Neural Engine Online' : 'Node Hibernating'}
+                  </span>
                 </div>
-                <span className="text-xs font-bold uppercase tracking-widest group-hover:text-white transition-colors">
-                  {formData.isActive ? 'System Activated' : 'System Deactivated'}
-                </span>
-              </button>
+                <button 
+                  onClick={() => setFormData({...formData, isActive: !formData.isActive})}
+                  className={`px-6 py-2 rounded-full text-[9px] font-black uppercase tracking-widest transition-all border ${
+                    formData.isActive 
+                      ? 'bg-white text-black border-white' 
+                      : 'bg-transparent text-white border-white/20 hover:border-white/50'
+                  }`}
+                >
+                  {formData.isActive ? 'Stop Automation' : 'Start Automation'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
